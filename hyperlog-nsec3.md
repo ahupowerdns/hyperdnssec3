@@ -231,6 +231,37 @@ Experimentally, if thousands of NSEC3 hash values are considered,
 their distances quickly provide an estimate of the number of DNSSEC
 delegation in the .NL zone that turns out to be accurate to 1%. 
 
+dnssecmeasure tool
+------------------
+To perform this calculation, clone the 'dnssecmeasure' branch of PowerDNS
+from https://github.com/ahupowerdns/pdns.git and run: 
+
+``` 
+$ ./dnssecmeasure nl 4096
+Will send 4096 queries to: nl1.dnsnode.net sns-pb.isc.org ns-nl.nic.fr 
+ns3.dns.nl ns1.dns.nl ns2.dns.nl ns4.dns.nl ns5.dns.nl 
+194.146.106.42 2001:67c:1010:10::53 2a00:d78:0:102:193:176:144:5 
+213.154.241.85 95.142.99.212 2001:7b8:606::85 193.176.144.5 
+2a00:1188:5::212 194.0.28.53 2001:678:2c:0:194:0:28:53 
+2001:610:0:800d::10 194.171.17.10 192.5.4.1 2001:660:3005:1::1:2 
+192.93.0.4 2001:500:2e::1 
+Poisson size 2.55888e+06
+```
+
+This tool opens a TCP/IP connection to each of the IPv4 and IPv6 addresses
+that host a zone. It then sends random questions to all these
+connections until it has received the requested number of answers (4096 by
+default). 
+
+It then divides the the totally available hash length ($2^{160}$ bits currently)
+by theaverage 'width' of the NSEC3 records. Given that the NSEC3 hash
+lenghths are likely Poisson distributed, this is a very robust estimator of
+the total amount of signed names in a zone.
+
+Most zones can be measured this way in under a second.
+
+NOTE: Does not yet support NSEC signed zones!
+
 Determining number of signed delegations by eye
 -----------------------------------------------
 As a party trick, this estimation can be performed by eye - if a zone
@@ -242,4 +273,6 @@ signed delegations'.
 To further impress your friends, see how often you spot 4 overlapping base32
 digits and round up accordingly for more precision. 
 
-<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js"></script><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+
+
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style><script src="markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
